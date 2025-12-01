@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Tenant model for multi-tenancy
+model Tenant {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // hashed with bcrypt
+  name      String?
+  createdAt DateTime @default(now())
+
+  clientes  Cliente[]
+  cases     Case[]
+  invoices  Invoice[]
+}
+
+model Cliente {
+  id           Int       @id @default(autoincrement())
+  tenantId     String
+  nombre       String
+  email        String?
+  telefono     String?
+  company      String?
+  address      String?
+  city         String?
+  state        String?
+  zipCode      String?
+  country      String?
+  standardPrice Float    @default(0)
+  notes        String?
+  createdAt    DateTime  @default(now())
+  active       Boolean   @default(true)
+  lastModified DateTime  @updatedAt
+  lastSynced   DateTime?
+  syncStatus   String    @default("synced")
+  deviceId     String?
+
+  tenant       Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  cases        Case[]
+
+  @@index([tenantId])
+  @@index([email])
+  @@index([nombre])
+}
+
+model Case {
+  id                Int       @id @default(autoincrement())
+  tenantId          String
+  clienteId         Int
+  caseType          String
+  status            String    @default("Active")
+  billed            Boolean   @default(false)
+  consultationCalls Int       @default(0)
+  startDate         DateTime  @default(now())
+  endDate           DateTime?
+  notes             String?
+  deleted           Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  lastModified      DateTime  @updatedAt
+  lastSynced        DateTime?
+  syncStatus        String    @default("synced")
+  deviceId          String?
+
+  tenant            Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  cliente           Cliente   @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  invoices          Invoice[]
+
+  @@index([tenantId])
+  @@index([clienteId])
+  @@index([status])
+  @@index([caseType])
+}
+
+model Invoice {
+  id            Int       @id @default(autoincrement())
+  tenantId      String
+  caseId        Int
+  invoiceNumber String
+  issueDate     DateTime
+  dueDate       DateTime
+  currency      String    @default("EUR")
+  subtotal      Float
+  taxRate       Float     @default(0)
+  taxAmount     Float     @default(0)
+  discount      Float     @default(0)
+  total         Float
+  status        String
+  notes         String?
+  paymentTerms  String?
+  deleted       Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  lastModified  DateTime  @updatedAt
+  lastSynced    DateTime?
+  syncStatus    String    @default("synced")
+  deviceId      String?
+
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  case          Case      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  items         InvoiceItem[]
+
+  @@index([tenantId])
+  @@index([caseId])
+  @@index([invoiceNumber])
+  @@index([status])
+}
+
+model InvoiceItem {
+  id          Int      @id @default(autoincrement())
+  invoiceId   Int
+  description String
+  quantity    Int
+  unitPrice   Float
+  amount      Float
+  patientName String?
+  notes       String?
+  lastModified DateTime @updatedAt
+  syncStatus   String   @default("synced")
+  deviceId     String?
+
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
