@@ -31,6 +31,14 @@ export function createTenantPrismaClient(tenantId: string) {
           }
           return query(args);
         },
+        async upsert({ args, query }) {
+          if (args.where) {
+            args.where = { ...args.where, tenantId };
+          }
+          const createData = args.create as Record<string, unknown>;
+          createData.tenantId = tenantId;
+          return query(args);
+        },
         async delete({ args, query }) {
           if (args.where) {
             args.where = { ...args.where, tenantId };
@@ -64,6 +72,14 @@ export function createTenantPrismaClient(tenantId: string) {
           }
           return query(args);
         },
+        async upsert({ args, query }) {
+          if (args.where) {
+            args.where = { ...args.where, tenantId };
+          }
+          const createData = args.create as Record<string, unknown>;
+          createData.tenantId = tenantId;
+          return query(args);
+        },
         async delete({ args, query }) {
           if (args.where) {
             args.where = { ...args.where, tenantId };
@@ -95,6 +111,14 @@ export function createTenantPrismaClient(tenantId: string) {
           if (args.where) {
             args.where = { ...args.where, tenantId };
           }
+          return query(args);
+        },
+        async upsert({ args, query }) {
+          if (args.where) {
+            args.where = { ...args.where, tenantId };
+          }
+          const createData = args.create as Record<string, unknown>;
+          createData.tenantId = tenantId;
           return query(args);
         },
         async delete({ args, query }) {
