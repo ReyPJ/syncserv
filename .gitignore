@@ -29,4 +29,4 @@ yarn-error.log*
 Thumbs.db
 
 # Prisma
-prisma/migrations/
+# prisma/migrations/ - DO NOT IGNORE, needed for Railway deployment
